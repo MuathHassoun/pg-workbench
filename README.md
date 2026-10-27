@@ -1,6 +1,6 @@
 # Local DB Studio
 
-A standalone, English-only interface for managing a local PostgreSQL database. It supports schema and table browsing, column inspection, paged table data, row insert/update/delete, CSV export, and real SQL execution.
+A standalone interface for managing a local PostgreSQL database. It supports schema and table browsing, column inspection, paged table data, row insert/update/delete, CSV export, and real SQL execution.
 
 ## Run
 
@@ -22,8 +22,6 @@ db-integration/
 ├── package.json     # Scripts and runtime dependencies
 └── README.md        # Setup, architecture, and safety notes
 ```
-
-Keep browser-only changes in `client/` and local API/database changes in `server/`. The server serves only the explicitly listed browser files; add new static assets to the allowlist in `server/index.js` when needed.
 
 ## Security and scope
 
