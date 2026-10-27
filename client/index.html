@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8fc" />
+    <title>Local DB Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="#" aria-label="Local Database Studio">
+          <span class="brand-mark">DB</span>
+          <span class="brand-copy"><strong>LOCAL DB</strong><small>DATABASE STUDIO</small></span>
+          <span class="brand-version">LOCAL</span>
+        </a>
+        <div class="connection-card">
+          <span class="connection-icon" aria-hidden="true">▤</span>
+          <span class="connection-copy"><strong id="connection-name">Not connected</strong><small id="connection-status">PostgreSQL · Disconnected</small></span>
+          <button class="icon-button connection-menu" id="open-connection" aria-label="Connection settings">⚙</button>
+        </div>
+        <button class="nav-item active" data-view="table-view"><span class="nav-icon">▦</span><span>Table explorer</span></button>
+        <button class="nav-item" data-view="sql-view"><span class="nav-icon">⌘</span><span>SQL editor</span><span class="nav-shortcut">⌘ K</span></button>
+        <button class="nav-item" data-view="activity-view"><span class="nav-icon">◷</span><span>Activity log</span></button>
+        <div class="sidebar-divider"></div>
+        <div class="section-heading"><span>Database objects</span><button class="icon-button" id="disconnect-button" aria-label="Disconnect">⏻</button></div>
+        <div id="schema-list"><p class="sidebar-empty">Connect to a local database to browse schemas.</p></div>
+        <div class="sidebar-bottom"><small id="local-only-note">Loopback only · Credentials are not saved</small></div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>Database</span><b>/</b><strong id="breadcrumb-current">—</strong></div>
+          <div class="topbar-actions"><span class="environment" id="environment-label"><i></i> Local PostgreSQL</span></div>
+        </header>
+
+        <section id="table-view" class="view-section">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-dot"></span> Schema <b id="schema-name">—</b></div>
+              <h1 id="table-title">Select a table</h1>
+              <p id="table-description">Browse tables and live data in your local database.</p>
+            </div>
+            <div class="heading-actions">
+              <button class="button button-quiet" id="refresh-button"><span>↻</span> Refresh</button>
+              <button class="button button-outline" id="export-button"><span>⇩</span> Export page</button>
+              <button class="button button-primary" id="add-row-button" disabled><span>＋</span> Insert row</button>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <article class="stat-card"><span class="stat-icon violet">▦</span><div><small>Estimated rows</small><strong id="record-count">—</strong></div><span class="stat-caption">PostgreSQL estimate</span></article>
+            <article class="stat-card"><span class="stat-icon green">◉</span><div><small>Columns</small><strong id="column-count">—</strong></div><span class="stat-caption">In this table</span></article>
+            <article class="stat-card"><span class="stat-icon blue">◷</span><div><small>Rows loaded</small><strong id="loaded-count">—</strong></div><span class="stat-caption">Maximum 100</span></article>
+            <article class="stat-card"><span class="stat-icon amber">⌁</span><div><small>Object type</small><strong id="object-type">—</strong></div><span class="stat-caption">Current schema</span></article>
+          </div>
+
+          <div class="data-panel">
+            <div class="panel-tabs">
+              <button class="panel-tab active" data-tab="data"><span>▦</span> Data <b id="tab-row-count">—</b></button>
+              <button class="panel-tab" data-tab="structure"><span>☷</span> Structure</button>
+              <div class="panel-tab-spacer"></div><span class="last-sync"><i></i> Local database</span>
+            </div>
+            <div class="table-toolbar" id="table-toolbar">
+              <div class="toolbar-left">
+                <label class="search-box"><span>⌕</span><input id="table-search" type="search" placeholder="Search loaded rows..." /><kbd>⌘ F</kbd></label>
+                <button class="filter-button" id="previous-page">‹ <span>Previous</span></button>
+                <button class="filter-button" id="next-page"><span>Next</span> ›</button>
+              </div>
+              <div class="toolbar-right"><span class="result-count" id="shown-count">No table selected</span><select id="page-size" class="page-size" aria-label="Rows per page"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select></div>
+            </div>
+            <div class="table-scroll" id="table-container"></div>
+            <div class="pagination">
+              <span id="pagination-label">Connect to a local database to browse tables</span>
+              <div class="pagination-controls"><button class="page-button" id="page-back" aria-label="Previous page">‹</button><span id="page-number">1</span><button class="page-button" id="page-forward" aria-label="Next page">›</button></div>
+              <label class="rows-select">Page</label>
+            </div>
+          </div>
+        </section>
+
+        <section id="sql-view" class="view-section hidden">
+          <div class="page-heading">
+            <div><div class="eyebrow"><span class="eyebrow-dot"></span> SQL WORKSPACE</div><h1>SQL editor</h1><p>Run SQL statements against your connected local database.</p></div>
+            <div class="heading-actions"><button class="button button-quiet" id="format-query">✧ Format</button><button class="button button-primary" id="run-query"><span>▶</span> Run query <kbd>⌘ ↵</kbd></button></div>
+          </div>
+          <div class="sql-workspace">
+            <div class="editor-top"><div class="query-tab"><span class="query-dot"></span> New query <span class="query-close">×</span></div><span class="editor-language" id="editor-database">Not connected</span></div>
+            <div class="editor-wrap"><div class="line-numbers" id="line-numbers">1</div><textarea id="sql-editor" spellcheck="false" aria-label="SQL editor" placeholder="Write SQL here..."></textarea></div>
+            <div class="editor-footer"><span><i></i> Ready</span><span>UTF-8</span></div>
+          </div>
+          <div class="query-results">
+            <div class="results-heading"><div><strong>Results</strong><span id="query-status">No query has been run</span></div><button class="button button-quiet" id="copy-results">Copy results</button></div>
+            <div class="results-placeholder" id="results-placeholder"><span class="placeholder-icon">⌘</span><strong>Query results will appear here</strong><small>Write SQL and click Run.</small></div>
+            <div id="query-result-table" class="table-scroll hidden"></div>
+          </div>
+        </section>
+
+        <section id="activity-view" class="view-section hidden">
+          <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> Session</div><h1>Activity log</h1><p>Review database operations from this session.</p></div><button class="button button-outline" id="clear-activity">Clear log</button></div>
+          <div class="activity-panel" id="activity-list"></div>
+        </section>
+
+        <footer class="main-footer"><span>Local DB Studio · Credentials are not saved</span><span id="footer-status">Disconnected · Loopback only</span></footer>
+      </main>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+    <dialog id="row-dialog" class="row-dialog">
+      <form id="row-form">
+        <div class="dialog-heading"><div><span class="dialog-icon">＋</span><div><h2 id="dialog-title">Insert row</h2><p id="dialog-description"></p></div></div><button type="button" class="icon-button" id="close-dialog" aria-label="Close">×</button></div>
+        <div id="form-fields" class="form-fields"></div>
+        <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancel-dialog">Cancel</button><button type="submit" class="button button-primary" id="save-row">Save row</button></div>
+      </form>
+    </dialog>
+    <dialog id="connection-dialog" class="row-dialog connection-dialog">
+      <form id="connection-form">
+        <div class="dialog-heading"><div><span class="dialog-icon">⌘</span><div><h2>Connect to local PostgreSQL</h2><p>Enter your credentials. The password is kept in memory and is not saved.</p></div></div><button type="button" class="icon-button" id="close-connection-dialog" aria-label="Close">×</button></div>
+        <div class="form-fields">
+          <div class="field-group"><label for="db-host">Local host</label><input id="db-host" name="host" value="127.0.0.1" required autocomplete="off" /></div>
+          <div class="field-group"><label for="db-port">Port</label><input id="db-port" name="port" type="number" value="5432" min="1" max="65535" required /></div>
+          <div class="field-group"><label for="db-name">Database name</label><input id="db-name" name="database" required autocomplete="off" /></div>
+          <div class="field-group"><label for="db-user">Username</label><input id="db-user" name="user" required autocomplete="username" /></div>
+          <div class="field-group full-width"><label for="db-password">Password</label><input id="db-password" name="password" type="password" autocomplete="current-password" /></div>
+        </div>
+        <p class="connection-safety">Connections are restricted to localhost. Remote database hosts are blocked.</p>
+        <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancel-connection">Cancel</button><button type="submit" class="button button-primary" id="connect-submit">Connect</button></div>
+      </form>
+    </dialog>
+    <script src="./app.js"></script>
+  </body>
+</html>
